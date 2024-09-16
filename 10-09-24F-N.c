@@ -33,19 +33,33 @@ void append(struct List *this, char value)
 void print(const struct List *this)
 {
     for (struct Node *it = this->head; it; it = it->next)
-    printf("%c", it->value);
+    fprintf(stdout, "%c", it->value);
 }
 
-void remove(struct List *this, struct Node *node)
+void removeNode(struct List *this, struct Node *node)
 {
-    if (!this->head) return;
+    if (!this->head || !node) return;
     
-    if (node == this->head) this->head = this->head->next;
-    
-    if (node == this->tail)
+    if (node == this->head)
     {
-        this->tail = this->head;
+        this->head = this->head->next;
+        if (!this->head) this->tail = NULL;
+    } 
+    
+    else 
+    {
+        struct Node *prev = this->head;
+
+        while (prev && prev->next != node) prev = prev->next;
+
+        if (!prev) return;
+
+        prev->next = node->next;
+
+        if (!prev->next) this->tail = prev;
     }
+
+    free(node);
 }
 
 struct Parameters decodeParameters(int argc, const char *const argv[])
@@ -101,7 +115,33 @@ size_t countOccurrences(const struct List *this, char c)
 
 void processL(struct List *this, size_t o)
 {
+    struct Node *it = this->head;
 
+    while (it) if (countOccurrences(this, it->value) < o) it = it->next;
+    else
+    {
+        removeNode(this, it);
+        it = this->head;
+    }
+}
+
+void writeToFile(struct List *this, const char *out_filename)
+{
+    FILE *fp = fopen(out_filename, "w");
+
+    if (!fp)
+    {
+        fprintf(stderr, "Il file \"%s\" non e' disponibile per la scrittura", out_filename);
+        exit(EXIT_FAILURE);
+    }
+
+    while (this->head)
+    {
+        fprintf(fp, "%c", this->head->value);
+        removeNode(this, this->head);
+    }
+
+    fclose(fp);
 }
 
 int main(int argc, char *argv[])
@@ -120,4 +160,10 @@ int main(int argc, char *argv[])
     size_t o = countOccurrences(&L, parameters.c);
     puts("\n\n==========PUNTO C==========");
     printf("Occorrence di %c in L: %lu", parameters.c, o);
+
+    processL(&L, o);
+    puts("\n==========PUNTO D==========");
+    print(&L);
+
+    writeToFile(&L, parameters.out_filename);
 }
