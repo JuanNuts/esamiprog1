@@ -7,4 +7,5 @@ Esami di Laboratorio di Programmazione I
   <li>10 settembre 2024 F-N</li>
   <li>25 luglio 2024 A-E, O-Z</li>
   <li>25 luglio 2024 F-N</li>
+  <li>29 gennaio 2025 F-N</li>
 </ul>
